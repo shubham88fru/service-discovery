@@ -1,2 +1,2 @@
 # service-discovery
-An implementation of a distributed service discovery application (similar to etcd, eureka, etc.)
+An implementation of a distributed service discovery service, implemented using Apache Zookeeper (similar to etcd, eureka, etc.)
