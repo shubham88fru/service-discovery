@@ -1,0 +1,8 @@
+----------------------------
+Intuition for implementation
+----------------------------
+- Upon connection to zookeeper, each node will create an ephemeral znode under the service registry parent's znode,
+and store its address in the znode for others to see.
+- Then, any node which is interested in getting the address of any other node will simply subscribe and call the
+`getChildren()` on service registry's znode to get the list all znodes (effectively address of all the nodes) and connect
+with the node that it desires to.
