@@ -32,8 +32,11 @@ public class LeaderElection implements Watcher {
 
     private final ZooKeeper zooKeeper;
 
-    public LeaderElection(ZooKeeper zooKeeper) {
+    private final OnElectionCallback onElectionCallback;
+
+    public LeaderElection(ZooKeeper zooKeeper, OnElectionCallback onElectionCallback) {
         this.zooKeeper = zooKeeper;
+        this.onElectionCallback = onElectionCallback;
     }
 
 
@@ -73,6 +76,12 @@ public class LeaderElection implements Watcher {
              */
             if (smallestChild.equals(currentZnodeName)) {
                 System.out.println("I am the leader!");
+
+                /*
+                    Current node is a leader. Declare it
+                    so that service registry knows.
+                 */
+                onElectionCallback.onElectedToBeLeader();
                 return;
             } else {
                 System.out.println("I ain't the leader." + smallestChild + " is the leader." );
@@ -89,6 +98,12 @@ public class LeaderElection implements Watcher {
                 predecessorStat = zooKeeper.exists(ELECTION_ZNODE + "/" + predecessorZnodeName, this);
             }
         }
+
+        /*
+            Not a leader, instead a worker. Declare that.
+         */
+        onElectionCallback.onWorker();
+
 
         System.out.println("Watching znode " + predecessorZnodeName);
         System.out.println();

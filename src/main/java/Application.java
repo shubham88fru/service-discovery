@@ -1,4 +1,5 @@
 import cluster.management.LeaderElection;
+import cluster.management.ServiceRegistryAndDiscovery;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
@@ -21,6 +22,8 @@ public class Application implements Watcher {
      */
     private static final int SESSION_TIMEOUT = 3000;
 
+    private static final int DEFAULT_PORT = 8080;
+
 
     /**
      * The zookeeper client object.
@@ -30,9 +33,18 @@ public class Application implements Watcher {
     private ZooKeeper zooKeeper;
 
     public static void main(String[] args) throws IOException, InterruptedException, KeeperException {
+        int currentServerPort = args.length == 1 ? Integer.parseInt(args[0]): DEFAULT_PORT;
+
         Application application = new Application();
         ZooKeeper zooKeeper = application.connectToZookeeper();
-        LeaderElection leaderElection = new LeaderElection(zooKeeper);
+
+        ////////////////////Integration service registry to the master-worker arch//////////////////////////
+        ServiceRegistryAndDiscovery serviceRegistryAndDiscovery = new ServiceRegistryAndDiscovery(zooKeeper);
+        OnElectionAction onElectionAction = new OnElectionAction(serviceRegistryAndDiscovery, currentServerPort);
+
+        LeaderElection leaderElection = new LeaderElection(zooKeeper, onElectionAction);
+        ////////////////////Integration service registry to the master-worker arch//////////////////////////
+
 
         leaderElection.selfElectForLeader(); //each node will put try to put forward itself to be the leader.
         leaderElection.electLeader(); //identify the leader.
