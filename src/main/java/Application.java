@@ -6,6 +6,8 @@ import org.apache.zookeeper.ZooKeeper;
 
 import java.io.IOException;
 
+import static org.apache.zookeeper.Watcher.Event.EventType.None;
+
 public class Application implements Watcher {
 
 
@@ -80,6 +82,21 @@ public class Application implements Watcher {
     }
     @Override
     public void process(WatchedEvent watchedEvent) {
+        //general connection,disconnect events don't have a type.
+        switch (watchedEvent.getType()) {
+            case None -> {
+                if (watchedEvent.getState() == Event.KeeperState.SyncConnected) { //connected.
+                    System.out.println("Node connected to zookeeper successfully.");
+                } else { //disconnected
+
+                    //wake up the main thread.
+                    synchronized (zooKeeper) {
+                        System.out.println("Node disconnected from zookeeper..");
+                        zooKeeper.notifyAll();
+                    }
+                }
+            }
+        }
 
     }
 }
