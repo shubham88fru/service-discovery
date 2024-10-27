@@ -6,3 +6,10 @@ and store its address in the znode for others to see.
 - Then, any node which is interested in getting the address of any other node will simply subscribe and call the
 `getChildren()` on service registry's znode to get the list all znodes (effectively address of all the nodes) and connect
 with the node that it desires to.
+- Idea is that the service discovery znode will (at all times) have the most up to date info about the node addresses (or
+any other metadata, for that matter) and the leader will be able to subscribe and get all addresses at any time it wants.
+Moreover, the leader will also get callbacks when other nodes join/leave the cluster.
+- The magic happens through the `OnElectionCallback` interface. It is wired up into the LeaderElection algorithm and
+the client supposed to pass an implementation to the callback methods when instantiating the leader election algorithm.
+Then, depending on whether a node gets elected as a leader or as a worker, different callbacks will be called which would
+initiate certain actions on the service discovery.
